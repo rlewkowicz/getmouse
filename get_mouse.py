@@ -28,6 +28,7 @@ persistent_object.ar_sX = 0
 persistent_object.ar_eX = 0 
 persistent_object.counter = 0
 persistent_object.secondary = 0
+persistent_object.multiplier = 0
 
 @dont_block
 def counter():
@@ -40,11 +41,12 @@ def counter():
     yinterval = 0
     persistent_object.counter = 0
     persistent_object.secondary = 0
-    multiplier = 6
+    persistent_object.multiplier = 6
     start = time.time_ns() // 1_000_000  
 
     with open(P3, 'wb') as f:
         while True:
+            persistent_object.multiplier = 6
             end = time.time_ns() // 1_000_000 
             if (end - start) > 1:
                 start = time.time_ns() // 1_000_000
@@ -104,7 +106,7 @@ def counter():
                 persistent_object.counter = 0
 
 
-            b='return ' + str(abs(AR_H)) + "," + str(abs(AR_V)) + "," + str(is_pos(AR_H)*multiplier) + "," + str(is_pos(AR_V)*multiplier)
+            b='return ' + str(abs(AR_H)) + "," + str(abs(AR_V)) + "," + str(is_pos(AR_H)*persistent_object.multiplier) + "," + str(is_pos(AR_V)*persistent_object.multiplier)
             f.seek(0,0)
             f.write("                                        ".encode('ascii'))
             f.flush()
@@ -120,18 +122,53 @@ def mouse():
     current = ctypes.windll.user32.GetKeyState(0x01)
     while current > 2:
         current = ctypes.windll.user32.GetKeyState(0x01)
+    
+    begin = time.time_ns() // 1_000_000
+    new = 0 
+
+    on = 1
+    
+    m4_state=-1
 
     with open(P1, 'wb', 0) as f:  
         while 1:
-            new = ctypes.windll.user32.GetKeyState(0x01)
-            # new = ctypes.windll.user32.GetKeyState(0x05)
-            persistent_object.mouse = int(str(new)[0])
-            # if persistent_object.counter > 800:
+            main = ctypes.windll.user32.GetKeyState(0x01)
+            m4 = ctypes.windll.user32.GetKeyState(0x05)
+
+            if m4_state == -1:
+                new = main
+                persistent_object.mouse = int(str(new)[0])
+            
+            
+            if int(m4) > 2:
+                persistent_object.mouse = 5
+                m4_state=1
+                if persistent_object.profile == 3:
+                    end = time.time_ns() // 1_000_000 
+                    if (end - begin) > 10:
+                        if on < 2:
+                            on = 9
+                        else:
+                            on = 1
+                        begin = time.time_ns() // 1_000_000
+                new = on
+            elif m4 < 2 and m4_state==1:                        
+                new = 0
+                m4_state = 0
+            elif m4_state == 0:
+                persistent_object.mouse = 0
+                m4_state = -1
+                new = 0
+
+
+            # if persistent_object.counter > 80:
             #     persistent_object.secondary =  0
             #     new = 0
             b='return ' + str(new)[0]
             f.seek(0,0)
             f.write(b.encode('ascii'))
+            if m4_state == 0:
+                sleep(.1)
 
 @dont_block
 def active():
@@ -156,6 +193,16 @@ def active():
 @dont_block
 def profile():
     while True:
+        if ctypes.windll.user32.GetKeyState(0x59) > 2:
+            if persistent_object.profile != 3:
+                persistent_object.profile = 3
+            else:
+                persistent_object.profile = 1
+            sleep(.2)
+
+        if persistent_object.profile == 3:
+            continue
+
         if ctypes.windll.user32.GetKeyState(0x32) > 2:
             persistent_object.profile = 2
             sleep(.001)
@@ -211,6 +258,29 @@ def select_profile():
         else:
             persistent_object.ar_eY = ar_eY_old
             persistent_object.ar_eX = ar_eX_old
+
+    if persistent_object.profile == 3:
+        persistent_object.ar_tm = 200 
+        persistent_object.ar_sY = 2
+        persistent_object.ar_eY = 1
+        persistent_object.ar_sX = 6 
+        persistent_object.ar_eX = 7
+        ar_eY_old = persistent_object.ar_eY 
+        ar_eX_old = persistent_object.ar_eX 
+        mult_old =  persistent_object.multiplier
+        persistent_object.multiplier = 7
+
+        if persistent_object.secondary > 50:
+            persistent_object.ar_eY = 1 
+            persistent_object.ar_eX = 4
+        if persistent_object.secondary > 40:
+            persistent_object.ar_eX = 5
+            persistent_object.ar_eY = 2
+        # elif persistent_object.secondary > 30:
+        #     persistent_object.ar_eY = 2
+        #     persistent_object.ar_eX = 5
+   
+
 
 
 
