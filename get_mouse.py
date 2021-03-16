@@ -29,6 +29,10 @@ persistent_object.ar_eX = 0
 persistent_object.counter = 0
 persistent_object.secondary = 0
 persistent_object.multiplier = 0
+persistent_object.xdirection = 1
+persistent_object.ydirection = 1
+persistent_object.multiplier = 0
+
 
 @dont_block
 def counter():
@@ -41,7 +45,6 @@ def counter():
     yinterval = 0
     persistent_object.counter = 0
     persistent_object.secondary = 0
-    persistent_object.multiplier = 6
     start = time.time_ns() // 1_000_000  
 
     with open(P3, 'wb') as f:
@@ -106,7 +109,7 @@ def counter():
                 persistent_object.counter = 0
 
 
-            b='return ' + str(abs(AR_H)) + "," + str(abs(AR_V)) + "," + str(is_pos(AR_H)*persistent_object.multiplier) + "," + str(is_pos(AR_V)*persistent_object.multiplier)
+            b='return ' + str(abs(AR_H)) + "," + str(abs(AR_V)) + "," + str(persistent_object.xdirection*persistent_object.multiplier) + "," + str(persistent_object.ydirection*persistent_object.multiplier)
             f.seek(0,0)
             f.write("                                        ".encode('ascii'))
             f.flush()
@@ -133,17 +136,17 @@ def mouse():
     with open(P1, 'wb', 0) as f:  
         while 1:
             main = ctypes.windll.user32.GetKeyState(0x01)
+            m4 = 0
             m4 = ctypes.windll.user32.GetKeyState(0x05)
 
             if m4_state == -1:
                 new = main
                 persistent_object.mouse = int(str(new)[0])
             
-            
             if int(m4) > 2:
                 persistent_object.mouse = 5
                 m4_state=1
-                if persistent_object.profile == 3:
+                if persistent_object.profile > 0:
                     end = time.time_ns() // 1_000_000 
                     if (end - begin) > 10:
                         if on < 2:
@@ -159,9 +162,7 @@ def mouse():
                 persistent_object.mouse = 0
                 m4_state = -1
                 new = 0
-
-
-            # if persistent_object.counter > 80:
+            # if persistent_object.counter > 300:
             #     persistent_object.secondary =  0
             #     new = 0
             b='return ' + str(new)[0]
@@ -192,103 +193,136 @@ def active():
 
 @dont_block
 def profile():
+    arr = []
+    COUNT = 0
     while True:
+        logging.info(persistent_object.profiley3212121)
         if ctypes.windll.user32.GetKeyState(0x59) > 2:
-            if persistent_object.profile != 3:
-                persistent_object.profile = 3
-            else:
-                persistent_object.profile = 1
+            COUNT = 0
+            arr = []
             sleep(.2)
+            while COUNT < 2:
+                if ctypes.windll.user32.GetKeyState(0x31) > 2:
+                    arr.append(1)
+                    sleep(.2)
+                    COUNT = COUNT + 1
+                if ctypes.windll.user32.GetKeyState(0x32) > 2:
+                    arr.append(2)
+                    sleep(.2)
+                    COUNT = COUNT + 1
+                if ctypes.windll.user32.GetKeyState(0x33) > 2:
+                    arr.append(3)
+                    sleep(.2)
+                    COUNT = COUNT + 1
+        try:
+            if ctypes.windll.user32.GetKeyState(0x32) > 2:
+                persistent_object.profile = arr[1]
+                sleep(.001)
 
-        if persistent_object.profile == 3:
-            continue
-
-        if ctypes.windll.user32.GetKeyState(0x32) > 2:
-            persistent_object.profile = 2
-            sleep(.001)
-
-        if ctypes.windll.user32.GetKeyState(0x31) > 2:
-            persistent_object.profile = 1
-            sleep(.001)
-
-
-
+            if ctypes.windll.user32.GetKeyState(0x31) > 2:
+                persistent_object.profile = arr[0]
+                sleep(.001)
+        except:
+            pass
 
 def select_profile():
     if persistent_object.profile == 1:
+        persistent_object.multiplier = 5
         persistent_object.ar_tm = 700 
-        persistent_object.ar_sY = 6 
-        persistent_object.ar_eY = 5 
-        persistent_object.ar_sX = -40 
-        persistent_object.ar_eX = -40
-        ar_eY_old = persistent_object.ar_eY 
-        ar_eX_old = persistent_object.ar_eX  
+        persistent_object.ar_sY = 4 
+        persistent_object.ar_eY = 4 
+        persistent_object.ar_sX = 47 
+        persistent_object.ar_eX = 10
+        persistent_object.xdirection = -1
 
-        if persistent_object.secondary > 430:
-            persistent_object.ar_eY =25 
-            persistent_object.ar_eX = 100
-        elif persistent_object.secondary > 330:
-            persistent_object.ar_eY = 19 
-            persistent_object.ar_eX = -19
-        elif persistent_object.secondary > 220:
-            persistent_object.ar_eY = 6 
-            persistent_object.ar_eX = 100
-        elif persistent_object.secondary > 130:
-            persistent_object.ar_eY = 5 
-            persistent_object.ar_eX = -10 
-        else:
-            persistent_object.ar_eY = ar_eY_old
-            persistent_object.ar_eX = ar_eX_old
+    if persistent_object.secondary > 1000:
+        pass
+    elif persistent_object.secondary > 2220:
+        pass
+    elif persistent_object.secondary > 600:
+        persistent_object.xdirection = -1
+        persistent_object.ar_eX = 30
+        persistent_object.ar_eY = 21
+    elif persistent_object.secondary > 400:
+        persistent_object.xdirection = 1
+        persistent_object.ar_eX = 35
+        persistent_object.ar_eY = 18
+    elif persistent_object.secondary > 320:
+        persistent_object.xdirection = 0
+        persistent_object.ar_eX = 35
+        persistent_object.ar_eY = 11
+    elif persistent_object.secondary > 290:
+        persistent_object.xdirection = 1
+        persistent_object.ar_eX = 35
+        persistent_object.ar_eY = 6
+    elif persistent_object.secondary > 234:
+        persistent_object.xdirection = 1
+        persistent_object.ar_eX = 30
+        persistent_object.ar_eY = 5
+    elif persistent_object.secondary > 165:
+        persistent_object.ar_eX = 8
+        persistent_object.ar_eY = 4
+    elif persistent_object.secondary > 150:
+        persistent_object.ar_eX = 26
+        persistent_object.ar_eY = 7
 
     if persistent_object.profile == 2:
+        persistent_object.multiplier = 5
         persistent_object.ar_tm = 1000 
-        persistent_object.ar_sY = 7
-        persistent_object.ar_eY = 10 
-        persistent_object.ar_sX = -31 
-        persistent_object.ar_eX = -29
-        ar_eY_old = persistent_object.ar_eY 
-        ar_eX_old = persistent_object.ar_eX  
+        persistent_object.ar_sY = 6
+        persistent_object.ar_eY = 7 
+        persistent_object.ar_sX = 20 
+        persistent_object.ar_eX = 20
+        persistent_object.xdirection = -1
 
-        if persistent_object.secondary > 310:
+        if persistent_object.secondary > 10000:
             persistent_object.ar_eY = 26 
             persistent_object.ar_eX = 60
-        elif persistent_object.secondary > 140:
-            persistent_object.ar_eY = 20 
-            persistent_object.ar_eX = -60 
-        else:
-            persistent_object.ar_eY = ar_eY_old
-            persistent_object.ar_eX = ar_eX_old
+        elif persistent_object.secondary > 600:
+            persistent_object.ar_eY = 40
+            persistent_object.ar_sY = 1000000
+            persistent_object.ar_eY = 1 
+            persistent_object.xdirection = 1
+        elif persistent_object.secondary > 600:
+            persistent_object.ar_eY = 40
+            persistent_object.xdirection = -1
+        elif persistent_object.secondary > 430:
+            persistent_object.xdirection = 0
+            persistent_object.ar_eY = 50
+            persistent_object.ar_eX = 30
+        elif persistent_object.secondary > 400:
+            persistent_object.ar_eY = 25
+            persistent_object.ar_eX = 50
+            persistent_object.xdirection = 1
+        elif persistent_object.secondary > 300:
+            persistent_object.xdirection = 1
+            persistent_object.ar_eY = 65
+        elif persistent_object.secondary > 200:
+            persistent_object.ar_eX = 30
+            persistent_object.ar_eY = 39
+        elif persistent_object.secondary > 100:
+            persistent_object.ar_eY = 8 
 
     if persistent_object.profile == 3:
-        persistent_object.ar_tm = 200 
-        persistent_object.ar_sY = 2
-        persistent_object.ar_eY = 1
-        persistent_object.ar_sX = 6 
-        persistent_object.ar_eX = 7
-        ar_eY_old = persistent_object.ar_eY 
-        ar_eX_old = persistent_object.ar_eX 
-        mult_old =  persistent_object.multiplier
-        persistent_object.multiplier = 7
+        persistent_object.multiplier = 2
+        persistent_object.ar_tm = 1000 
+        persistent_object.ar_sY = 1
+        persistent_object.ar_eY = 1 
+        persistent_object.ar_sX = 20 
+        persistent_object.ar_eX = 20
+        persistent_object.xdirection = 0
 
-        if persistent_object.secondary > 50:
-            persistent_object.ar_eY = 1 
-            persistent_object.ar_eX = 4
-        if persistent_object.secondary > 40:
-            persistent_object.ar_eX = 5
-            persistent_object.ar_eY = 2
-        # elif persistent_object.secondary > 30:
-        #     persistent_object.ar_eY = 2
-        #     persistent_object.ar_eX = 5
-   
+        if persistent_object.secondary > 10000:
+            pass
+        elif persistent_object.secondary > 300:
+            persistent_object.xdirection = 0
+        elif persistent_object.secondary > 200:
+            persistent_object.ar_eY = 1
+        elif persistent_object.secondary > 100:
+            persistent_object.xdirection = -1
+            persistent_object.ar_eX = 50
+            persistent_object.ar_eY = 3
 
-
-
-
-def is_pos(num):
-    if num > 0:
-        return 1
-    else:
-        return -1
 
 mouse()
 active()
